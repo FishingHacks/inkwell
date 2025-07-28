@@ -33,8 +33,7 @@ use llvm_sys::core::{LLVMMDNodeInContext, LLVMMDStringInContext};
 use llvm_sys::ir_reader::LLVMParseIRInContext;
 use llvm_sys::prelude::{LLVMContextRef, LLVMDiagnosticInfoRef, LLVMTypeRef, LLVMValueRef};
 use llvm_sys::target::{LLVMIntPtrTypeForASInContext, LLVMIntPtrTypeInContext};
-use once_cell::sync::Lazy;
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{LazyLock, Mutex, MutexGuard};
 
 use crate::attributes::Attribute;
 use crate::basic_block::BasicBlock;
@@ -66,10 +65,11 @@ use std::thread_local;
 // This is still technically unsafe because another program in the same process
 // could also be accessing the global context via the C API. `get_global` has been
 // marked unsafe for this reason. Iff this isn't the case then this should be fully safe.
-static GLOBAL_CTX: Lazy<Mutex<Context>> = Lazy::new(|| unsafe { Mutex::new(Context::new(LLVMGetGlobalContext())) });
+static GLOBAL_CTX: LazyLock<Mutex<Context>> =
+    LazyLock::new(|| unsafe { Mutex::new(Context::new(LLVMGetGlobalContext())) });
 
 thread_local! {
-    pub(crate) static GLOBAL_CTX_LOCK: Lazy<MutexGuard<'static, Context>> = Lazy::new(|| {
+    pub(crate) static GLOBAL_CTX_LOCK: LazyLock<MutexGuard<'static, Context>> = LazyLock::new(|| {
         GLOBAL_CTX.lock().unwrap_or_else(|e| e.into_inner())
     });
 }
