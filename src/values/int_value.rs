@@ -1,3 +1,5 @@
+#[llvm_versions(..19.1)]
+use llvm_sys::core::LLVMConstNUWNeg;
 #[llvm_versions(..=16)]
 use llvm_sys::core::LLVMConstSelect;
 #[llvm_versions(..=17)]
@@ -8,8 +10,8 @@ use llvm_sys::core::{
 use llvm_sys::core::{
     LLVMConstAdd, LLVMConstBitCast, LLVMConstIntGetSExtValue, LLVMConstIntGetZExtValue, LLVMConstIntToPtr,
     LLVMConstMul, LLVMConstNSWAdd, LLVMConstNSWMul, LLVMConstNSWNeg, LLVMConstNSWSub, LLVMConstNUWAdd, LLVMConstNUWMul,
-    LLVMConstNUWNeg, LLVMConstNUWSub, LLVMConstNeg, LLVMConstNot, LLVMConstSub, LLVMConstTrunc,
-    LLVMConstTruncOrBitCast, LLVMConstXor, LLVMIsAConstantInt,
+    LLVMConstNUWSub, LLVMConstNeg, LLVMConstNot, LLVMConstSub, LLVMConstTrunc, LLVMConstTruncOrBitCast, LLVMConstXor,
+    LLVMIsAConstantInt,
 };
 #[llvm_versions(..=18)]
 use llvm_sys::core::{LLVMConstICmp, LLVMConstShl};
@@ -97,7 +99,7 @@ impl<'ctx> IntValue<'ctx> {
     }
 
     pub fn const_nuw_neg(self) -> Self {
-        unsafe { IntValue::new(LLVMConstNUWNeg(self.as_value_ref())) }
+        self.get_type().const_zero()
     }
 
     pub fn const_add(self, rhs: IntValue<'ctx>) -> Self {

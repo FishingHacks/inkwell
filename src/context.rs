@@ -5,6 +5,10 @@ use crate::InlineAsmDialect;
 use libc::c_void;
 #[llvm_versions(..=6)]
 use llvm_sys::core::LLVMConstInlineAsm;
+#[llvm_versions(..19.1)]
+use llvm_sys::core::LLVMConstStringInContext;
+#[llvm_versions(19.1..)]
+use llvm_sys::core::LLVMConstStringInContext2;
 #[llvm_versions(12..)]
 use llvm_sys::core::LLVMCreateTypeAttribute;
 #[llvm_versions(7..)]
@@ -16,13 +20,13 @@ use llvm_sys::core::LLVMMetadataTypeInContext;
 #[llvm_versions(15..)]
 use llvm_sys::core::LLVMPointerTypeInContext;
 use llvm_sys::core::{
-    LLVMAppendBasicBlockInContext, LLVMConstStringInContext, LLVMConstStructInContext, LLVMContextCreate,
-    LLVMContextDispose, LLVMContextSetDiagnosticHandler, LLVMCreateBuilderInContext, LLVMCreateEnumAttribute,
-    LLVMCreateStringAttribute, LLVMDoubleTypeInContext, LLVMFP128TypeInContext, LLVMFloatTypeInContext,
-    LLVMGetGlobalContext, LLVMGetMDKindIDInContext, LLVMHalfTypeInContext, LLVMInsertBasicBlockInContext,
-    LLVMInt16TypeInContext, LLVMInt1TypeInContext, LLVMInt32TypeInContext, LLVMInt64TypeInContext,
-    LLVMInt8TypeInContext, LLVMIntTypeInContext, LLVMModuleCreateWithNameInContext, LLVMPPCFP128TypeInContext,
-    LLVMStructCreateNamed, LLVMStructTypeInContext, LLVMVoidTypeInContext, LLVMX86FP80TypeInContext,
+    LLVMAppendBasicBlockInContext, LLVMConstStructInContext, LLVMContextCreate, LLVMContextDispose,
+    LLVMContextSetDiagnosticHandler, LLVMCreateBuilderInContext, LLVMCreateEnumAttribute, LLVMCreateStringAttribute,
+    LLVMDoubleTypeInContext, LLVMFP128TypeInContext, LLVMFloatTypeInContext, LLVMGetGlobalContext,
+    LLVMGetMDKindIDInContext, LLVMHalfTypeInContext, LLVMInsertBasicBlockInContext, LLVMInt16TypeInContext,
+    LLVMInt1TypeInContext, LLVMInt32TypeInContext, LLVMInt64TypeInContext, LLVMInt8TypeInContext, LLVMIntTypeInContext,
+    LLVMModuleCreateWithNameInContext, LLVMPPCFP128TypeInContext, LLVMStructCreateNamed, LLVMStructTypeInContext,
+    LLVMVoidTypeInContext, LLVMX86FP80TypeInContext,
 };
 #[allow(deprecated)]
 use llvm_sys::core::{LLVMMDNodeInContext, LLVMMDStringInContext};
@@ -345,7 +349,13 @@ impl ContextImpl {
     fn metadata_string<'ctx>(&self, string: &str) -> MetadataValue<'ctx> {
         let c_string = to_c_str(string);
 
-        unsafe { MetadataValue::new(LLVMMDStringInContext(self.0, c_string.as_ptr(), c_string.to_bytes().len() as u32)) }
+        unsafe {
+            MetadataValue::new(LLVMMDStringInContext(
+                self.0,
+                c_string.as_ptr(),
+                c_string.to_bytes().len() as u32,
+            ))
+        }
     }
 
     fn get_kind_id(&self, key: &str) -> u32 {
@@ -374,11 +384,21 @@ impl ContextImpl {
     }
 
     fn const_string<'ctx>(&self, string: &[u8], null_terminated: bool) -> ArrayValue<'ctx> {
+        #[cfg(not(any(feature = "llvm19-1", feature = "llvm20-1")))]
         unsafe {
             ArrayValue::new(LLVMConstStringInContext(
                 self.0,
                 string.as_ptr() as *const ::libc::c_char,
                 string.len() as u32,
+                !null_terminated as i32,
+            ))
+        }
+        #[cfg(any(feature = "llvm19-1", feature = "llvm20-1"))]
+        unsafe {
+            ArrayValue::new(LLVMConstStringInContext2(
+                self.0,
+                string.as_ptr() as *const ::libc::c_char,
+                string.len(),
                 !null_terminated as i32,
             ))
         }

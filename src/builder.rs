@@ -2,6 +2,10 @@
 
 #[llvm_versions(18..)]
 use llvm_sys::core::LLVMBuildCallWithOperandBundles;
+#[llvm_versions(20.1..)]
+use llvm_sys::core::LLVMBuildGlobalString as LLVMBuildGlobalStringPtr;
+#[llvm_versions(..20.1)]
+use llvm_sys::core::LLVMBuildGlobalStringPtr;
 use llvm_sys::core::{
     LLVMAddCase, LLVMAddClause, LLVMAddDestination, LLVMBuildAShr, LLVMBuildAdd, LLVMBuildAddrSpaceCast,
     LLVMBuildAggregateRet, LLVMBuildAlloca, LLVMBuildAnd, LLVMBuildArrayAlloca, LLVMBuildArrayMalloc,
@@ -9,14 +13,14 @@ use llvm_sys::core::{
     LLVMBuildCondBr, LLVMBuildExactSDiv, LLVMBuildExtractElement, LLVMBuildExtractValue, LLVMBuildFAdd, LLVMBuildFCmp,
     LLVMBuildFDiv, LLVMBuildFMul, LLVMBuildFNeg, LLVMBuildFPCast, LLVMBuildFPExt, LLVMBuildFPToSI, LLVMBuildFPToUI,
     LLVMBuildFPTrunc, LLVMBuildFRem, LLVMBuildFSub, LLVMBuildFence, LLVMBuildFree, LLVMBuildGlobalString,
-    LLVMBuildGlobalStringPtr, LLVMBuildICmp, LLVMBuildIndirectBr, LLVMBuildInsertElement, LLVMBuildInsertValue,
-    LLVMBuildIntCast, LLVMBuildIntToPtr, LLVMBuildIsNotNull, LLVMBuildIsNull, LLVMBuildLShr, LLVMBuildLandingPad,
-    LLVMBuildMalloc, LLVMBuildMul, LLVMBuildNSWAdd, LLVMBuildNSWMul, LLVMBuildNSWNeg, LLVMBuildNSWSub, LLVMBuildNUWAdd,
-    LLVMBuildNUWMul, LLVMBuildNUWNeg, LLVMBuildNUWSub, LLVMBuildNeg, LLVMBuildNot, LLVMBuildOr, LLVMBuildPhi,
-    LLVMBuildPointerCast, LLVMBuildPtrToInt, LLVMBuildResume, LLVMBuildRet, LLVMBuildRetVoid, LLVMBuildSDiv,
-    LLVMBuildSExt, LLVMBuildSExtOrBitCast, LLVMBuildSIToFP, LLVMBuildSRem, LLVMBuildSelect, LLVMBuildShl,
-    LLVMBuildShuffleVector, LLVMBuildStore, LLVMBuildSub, LLVMBuildSwitch, LLVMBuildTrunc, LLVMBuildTruncOrBitCast,
-    LLVMBuildUDiv, LLVMBuildUIToFP, LLVMBuildURem, LLVMBuildUnreachable, LLVMBuildVAArg, LLVMBuildXor, LLVMBuildZExt,
+    LLVMBuildICmp, LLVMBuildIndirectBr, LLVMBuildInsertElement, LLVMBuildInsertValue, LLVMBuildIntCast,
+    LLVMBuildIntToPtr, LLVMBuildIsNotNull, LLVMBuildIsNull, LLVMBuildLShr, LLVMBuildLandingPad, LLVMBuildMalloc,
+    LLVMBuildMul, LLVMBuildNSWAdd, LLVMBuildNSWMul, LLVMBuildNSWNeg, LLVMBuildNSWSub, LLVMBuildNUWAdd, LLVMBuildNUWMul,
+    LLVMBuildNUWNeg, LLVMBuildNUWSub, LLVMBuildNeg, LLVMBuildNot, LLVMBuildOr, LLVMBuildPhi, LLVMBuildPointerCast,
+    LLVMBuildPtrToInt, LLVMBuildResume, LLVMBuildRet, LLVMBuildRetVoid, LLVMBuildSDiv, LLVMBuildSExt,
+    LLVMBuildSExtOrBitCast, LLVMBuildSIToFP, LLVMBuildSRem, LLVMBuildSelect, LLVMBuildShl, LLVMBuildShuffleVector,
+    LLVMBuildStore, LLVMBuildSub, LLVMBuildSwitch, LLVMBuildTrunc, LLVMBuildTruncOrBitCast, LLVMBuildUDiv,
+    LLVMBuildUIToFP, LLVMBuildURem, LLVMBuildUnreachable, LLVMBuildVAArg, LLVMBuildXor, LLVMBuildZExt,
     LLVMBuildZExtOrBitCast, LLVMClearInsertionPosition, LLVMDisposeBuilder, LLVMGetInsertBlock, LLVMInsertIntoBuilder,
     LLVMInsertIntoBuilderWithName, LLVMPositionBuilder, LLVMPositionBuilderAtEnd, LLVMPositionBuilderBefore,
     LLVMSetCleanup,
@@ -848,7 +852,7 @@ impl<'ctx> Builder<'ctx> {
     /// ```
     ///
     /// * **catch all**: An implementation of the C++ `catch(...)`, which catches all exceptions.
-    /// A catch clause with a NULL pointer value will match anything.
+    ///   A catch clause with a NULL pointer value will match anything.
     ///
     /// ```no_run
     /// use inkwell::context::Context;
@@ -920,7 +924,7 @@ impl<'ctx> Builder<'ctx> {
     /// ```
     ///
     /// * **filter**: A filter clause encodes that only some types of exceptions are valid at this
-    /// point. A filter clause is made by constructing a clause from a constant array.
+    ///   point. A filter clause is made by constructing a clause from a constant array.
     ///
     /// ```no_run
     /// use inkwell::context::Context;
@@ -3449,6 +3453,7 @@ impl<'ctx> Builder<'ctx> {
             feature = "llvm17-0",
             feature = "llvm18-0",
             feature = "llvm19-1",
+            feature = "llvm20-1",
         )))]
         if ptr.get_type().get_element_type() != value.get_type().into() {
             return Err(BuilderError::PointeeTypeMismatch(
@@ -3536,6 +3541,7 @@ impl<'ctx> Builder<'ctx> {
             feature = "llvm17-0",
             feature = "llvm18-0",
             feature = "llvm19-1",
+            feature = "llvm20-1",
         )))]
         if ptr.get_type().get_element_type().as_basic_type_enum() != cmp.get_type() {
             return Err(BuilderError::PointeeTypeMismatch(

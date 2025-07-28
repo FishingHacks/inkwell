@@ -207,6 +207,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
             feature = "llvm17-0",
             feature = "llvm18-0",
             feature = "llvm19-1",
+            feature = "llvm20-1",
         ))]
         sysroot: &str,
         #[cfg(any(
@@ -219,6 +220,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
             feature = "llvm17-0",
             feature = "llvm18-0",
             feature = "llvm19-1",
+            feature = "llvm20-1",
         ))]
         sdk: &str,
     ) -> (Self, DICompileUnit<'ctx>) {
@@ -259,6 +261,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
                 feature = "llvm17-0",
                 feature = "llvm18-0",
                 feature = "llvm19-1",
+                feature = "llvm20-1",
             ))]
             sysroot,
             #[cfg(any(
@@ -271,6 +274,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
                 feature = "llvm17-0",
                 feature = "llvm18-0",
                 feature = "llvm19-1",
+                feature = "llvm20-1",
             ))]
             sdk,
         );
@@ -319,6 +323,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
             feature = "llvm17-0",
             feature = "llvm18-0",
             feature = "llvm19-1",
+            feature = "llvm20-1",
         ))]
         sysroot: &str,
         #[cfg(any(
@@ -331,6 +336,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
             feature = "llvm17-0",
             feature = "llvm18-0",
             feature = "llvm19-1",
+            feature = "llvm20-1",
         ))]
         sdk: &str,
     ) -> DICompileUnit<'ctx> {
@@ -374,6 +380,7 @@ impl<'ctx> DebugInfoBuilder<'ctx> {
                 feature = "llvm17-0",
                 feature = "llvm18-0",
                 feature = "llvm19-1",
+                feature = "llvm20-1",
             ))]
             {
                 LLVMDIBuilderCreateCompileUnit(
@@ -1662,5 +1669,9 @@ mod flags {
         #[llvm_versions(19.1..)]
         #[llvm_variant(LLVMDWARFSourceLanguageHylo)]
         Hylo,
+
+        #[llvm_versions(20.1..)]
+        #[llvm_variant(LLVMDWARFSourceLanguageMetal)]
+        Metal,
     }
 }
